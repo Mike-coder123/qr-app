@@ -11,8 +11,9 @@
       background: #f0f2f5;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
+      padding: 40px 16px;
     }
     .card {
       background: white;
@@ -20,7 +21,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
       padding: 40px;
       width: 100%;
-      max-width: 480px;
+      max-width: 500px;
     }
     h1 { font-size: 1.6rem; color: #1a1a2e; margin-bottom: 8px; }
     p.subtitle { color: #666; font-size: 0.95rem; margin-bottom: 30px; }
@@ -37,7 +38,60 @@
     .file-upload:hover { border-color: #4f46e5; }
     .file-upload input { display: none; }
     .file-upload span { color: #888; font-size: 0.9rem; }
-    .file-upload .filename { color: #4f46e5; font-weight: 600; font-size: 0.9rem; }
+
+    /* Advanced toggle */
+    .advanced-toggle {
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; margin-bottom: 0;
+      font-size: 0.85rem; font-weight: 600; color: #4f46e5;
+      user-select: none;
+      margin-bottom: 16px;
+    }
+    .advanced-toggle .arrow {
+      transition: transform 0.2s;
+      font-size: 0.75rem;
+    }
+    .advanced-toggle.open .arrow { transform: rotate(90deg); }
+
+    .advanced-panel {
+      display: none;
+      background: #f8f8ff;
+      border: 1px solid #e8e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .advanced-panel.open { display: block; }
+
+    .param-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .param-row:last-child { margin-bottom: 0; }
+
+    .param-field { flex: 1; }
+    .param-field label { margin-bottom: 4px; }
+    .param-field input[type="number"] {
+      width: 100%; padding: 8px 10px; border: 1px solid #ddd;
+      border-radius: 6px; font-size: 0.95rem; margin-bottom: 0;
+    }
+    .param-field input[type="number"]:focus { outline: none; border-color: #4f46e5; }
+    .param-hint {
+      font-size: 0.75rem; color: #999; margin-top: 3px; line-height: 1.3;
+    }
+
+    .color-row {
+      display: flex; gap: 16px; margin-bottom: 0;
+    }
+    .color-field { flex: 1; }
+    .color-field label { margin-bottom: 4px; }
+    .color-field input[type="color"] {
+      width: 100%; height: 38px; border: 1px solid #ddd;
+      border-radius: 6px; cursor: pointer; padding: 2px;
+    }
+
     button {
       width: 100%; padding: 12px; background: #4f46e5; color: white;
       border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
@@ -50,17 +104,78 @@
   <div class="card">
     <h1>QR Code Generator</h1>
     <p class="subtitle">Enter a URL and upload a logo to generate a branded QR code.</p>
+
     <form method="POST" enctype="multipart/form-data">
       <label for="data">Text or URL</label>
       <input type="text" id="data" name="data" placeholder="https://example.com" required>
+
       <label>Logo Image (PNG)</label>
       <div class="file-upload" onclick="document.getElementById('logo').click()">
         <input type="file" id="logo" name="logo" accept=".png,image/*" required
                onchange="document.getElementById('fname').textContent = this.files[0].name">
         <span id="fname">Click to choose a file...</span>
       </div>
+
+      <!-- Advanced options toggle -->
+      <div class="advanced-toggle" id="advToggle" onclick="toggleAdvanced()">
+        <span class="arrow">▶</span> Advanced Options
+      </div>
+
+      <div class="advanced-panel" id="advPanel">
+
+        <div class="param-row">
+          <div class="param-field">
+            <label for="logo_scale">Logo Scale</label>
+            <input type="number" id="logo_scale" name="logo_scale" value="5" min="3" max="10" step="1">
+            <div class="param-hint">QR width ÷ this number = logo width. Higher = smaller logo. Range: 3–10. Default: 5.</div>
+          </div>
+          <div class="param-field">
+            <label for="box_margin">Logo Padding (px)</label>
+            <input type="number" id="box_margin" name="box_margin" value="8" min="0" max="30" step="1">
+            <div class="param-hint">White space around logo in pixels. Range: 0–30. Default: 8.</div>
+          </div>
+        </div>
+
+        <div class="param-row">
+          <div class="param-field">
+            <label for="box_size">QR Resolution</label>
+            <input type="number" id="box_size" name="box_size" value="10" min="5" max="20" step="1">
+            <div class="param-hint">Pixels per QR module. Higher = larger image. Range: 5–20. Default: 10.</div>
+          </div>
+          <div class="param-field">
+            <label for="border">Border Width</label>
+            <input type="number" id="border" name="border" value="4" min="1" max="10" step="1">
+            <div class="param-hint">Quiet zone around QR edge (in modules). Minimum recommended: 4.</div>
+          </div>
+        </div>
+
+        <div class="color-row">
+          <div class="color-field">
+            <label for="fill_color">QR Color</label>
+            <input type="color" id="fill_color" name="fill_color" value="#000000">
+            <div class="param-hint">Color of QR dots. Dark colors scan best.</div>
+          </div>
+          <div class="color-field">
+            <label for="back_color">Background Color</label>
+            <input type="color" id="back_color" name="back_color" value="#ffffff">
+            <div class="param-hint">Background color. High contrast with QR color is essential.</div>
+          </div>
+        </div>
+
+      </div>
+
       <button type="submit">Generate QR Code</button>
     </form>
   </div>
+
+  <script>
+    function toggleAdvanced() {
+      const toggle = document.getElementById('advToggle');
+      const panel = document.getElementById('advPanel');
+      toggle.classList.toggle('open');
+      panel.classList.toggle('open');
+    }
+  </script>
 </body>
 </html>
+EOF

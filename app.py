@@ -5,9 +5,6 @@ import io
 
 app = Flask(__name__)
 
-LOGO_SCALE = 5
-BOX_MARGIN = 8
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -17,18 +14,30 @@ def index():
         if not data or not logo_file:
             return "Missing data or logo.", 400
 
+        logo_scale = int(request.form.get("logo_scale", 5))
+        box_margin = int(request.form.get("box_margin", 8))
+        box_size   = int(request.form.get("box_size", 10))
+        border     = int(request.form.get("border", 4))
+        fill_color = request.form.get("fill_color", "#000000")
+        back_color = request.form.get("back_color", "#ffffff")
+
+        logo_scale = max(3, min(logo_scale, 10))
+        box_margin = max(0, min(box_margin, 30))
+        box_size   = max(5, min(box_size, 20))
+        border     = max(1, min(border, 10))
+
         qr = qrcode.QRCode(
             error_correction=qrcode.constants.ERROR_CORRECT_H,
-            box_size=10,
-            border=4,
+            box_size=box_size,
+            border=border,
         )
         qr.add_data(data)
         qr.make(fit=True)
-        img_qr = qr.make_image(fill_color="black", back_color="white").convert("RGBA")
+        img_qr = qr.make_image(fill_color=fill_color, back_color=back_color).convert("RGBA")
 
         logo = Image.open(logo_file).convert("RGBA")
         qr_w, qr_h = img_qr.size
-        logo_size = qr_w // LOGO_SCALE
+        logo_size = qr_w // logo_scale
         logo.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
 
         logo_w, logo_h = logo.size
@@ -36,8 +45,8 @@ def index():
 
         draw = ImageDraw.Draw(img_qr)
         draw.rectangle(
-            [pos[0] - BOX_MARGIN, pos[1] - BOX_MARGIN,
-             pos[0] + logo_w + BOX_MARGIN, pos[1] + logo_h + BOX_MARGIN],
+            [pos[0] - box_margin, pos[1] - box_margin,
+             pos[0] + logo_w + box_margin, pos[1] + logo_h + box_margin],
             fill="white"
         )
 
