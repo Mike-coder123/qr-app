@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>QR Code Generator</title></head>
+<body>
+  <h1>QR Code Generator with Logo</h1>
+  <form method="POST" enctype="multipart/form-data">
+    <label>Text or URL:<br>
+      <input type="text" name="data" required style="width:400px">
+    </label><br><br>
+    <label>Logo PNG:<br>
+      <input type="file" name="logo" accept=".png,image/*" required>
+    </label><br><br>
+    <button type="submit">Generate QR Code</button>
+  </form>
+</body>
+</html>
