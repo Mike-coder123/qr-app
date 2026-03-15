@@ -35,7 +35,18 @@ def index():
         qr.make(fit=True)
         img_qr = qr.make_image(fill_color=fill_color, back_color=back_color).convert("RGBA")
 
+        #logo = Image.open(logo_file).convert("RGBA")
+        #qr_w, qr_h = img_qr.size
+        #logo_size = qr_w // logo_scale
+        #logo.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
+
         logo = Image.open(logo_file).convert("RGBA")
+
+        # Shrink large photos before processing (e.g. phone camera images)
+        MAX_LOGO_INPUT = 800  # cap incoming image at 800px on longest side
+        if logo.width > MAX_LOGO_INPUT or logo.height > MAX_LOGO_INPUT:
+            logo.thumbnail((MAX_LOGO_INPUT, MAX_LOGO_INPUT), Image.Resampling.LANCZOS)
+
         qr_w, qr_h = img_qr.size
         logo_size = qr_w // logo_scale
         logo.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
